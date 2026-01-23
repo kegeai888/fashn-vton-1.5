@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FASHN VTON v1.5: Efficient Maskless Virtual Try-On in Pixel Space</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- Hero Slideshow -->
+    <section class="hero-slideshow">
+        <div class="slideshow-container">
+            <div class="slideshow-track" id="slideshow-track">
+                <img id="slideshow-next" class="slideshow-img" src="" alt="FASHN VTON try-on examples">
+                <img id="slideshow-current" class="slideshow-img" src="https://static.fashn.ai/repositories/fashn-vton-v15/hero/concat_1.webp" alt="FASHN VTON try-on examples">
+            </div>
+        </div>
+    </section>
+
+    <!-- Hero Section -->
+    <header class="hero">
+        <div class="container">
+            <h1>FASHN VTON v1.5: Efficient Maskless Virtual Try-On in Pixel Space</h1>
+
+            <div class="authors">
+                <a href="https://github.com/danbochman" class="author">Dan Bochman</a>
+                <a href="https://github.com/AyaBochman" class="author">Aya Bochman</a>
+            </div>
+            <div class="affiliation">
+                <a href="https://fashn.ai/">FASHN AI</a>
+            </div>
+
+            <p class="tagline">Built for consumer-facing virtual try-on with interactive performance. Given a person image and garment image, generates photorealistic results directly in pixel space without requiring segmentation masks.</p>
+
+            <div class="links">
+                <a href="https://github.com/fashn-AI/fashn-vton-1.5" class="btn btn-primary">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
+                    Code
+                </a>
+                <a href="https://huggingface.co/fashn-ai/fashn-vton-1.5" class="btn btn-secondary">
+                    🤗 Model
+                </a>
+                <span class="btn btn-disabled">
+                    📄 Paper <span class="coming-soon">(coming soon)</span>
+                </span>
+                <span class="btn btn-disabled">
+                    🎮 Demo <span class="coming-soon">(coming soon)</span>
+                </span>
+            </div>
+        </div>
+    </header>
+
+    <!-- Abstract Section -->
+    <section class="abstract">
+        <div class="container">
+            <h2>Abstract</h2>
+            <div class="abstract-content">
+                <p>Virtual try-on methods based on latent diffusion face two fundamental challenges: 1) warping garment details in latent space introduces distortion, making it difficult to preserve colors, logos, patterns, and textures, and 2) without true try-on triplets for training (images of the same person wearing different garments in identical poses), the field has adopted masking approaches that erase body-specific characteristics and constrain transformation volume. FASHN VTON v1.5 addresses both challenges with three key properties: 1) pixel-space generation that operates directly on RGB pixels without VAE encoding, preserving garment details, 2) maskless inference that generates try-on results without masking, preserving body identity and removing volume constraints, and 3) interactive performance with a 972M parameter architecture optimized for ~5 second inference on H100 GPUs. FASHN VTON v1.5 demonstrates that pixel-space generation combined with maskless inference enables high-fidelity virtual try-on suitable for consumer-facing applications. Released under Apache 2.0, FASHN VTON v1.5 is the first permissive open-source virtual try-on model and one of few pixel-space diffusion architectures publicly available for research and commercial use.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Method Section -->
+    <section class="method">
+        <div class="container">
+            <h2>Method</h2>
+
+            <h3>Architecture</h3>
+            <p>FASHN VTON v1.5 uses an MMDiT <a href="#ref-1">[1]</a> architecture that processes person and garment images jointly. 8 double-stream blocks handle cross-modal attention between person and garment tokens, followed by 16 single-stream blocks for self-attention over the concatenated sequence. 4 patch-mixer blocks <a href="#ref-2">[2]</a> pre-process image patches before the main transformer.</p>
+
+            <p>The model operates directly on RGB pixels instead of compressed latent space. The only spatial reduction is a 12×12 patch embedding. Pose keypoints are provided as single-channel grayscale images concatenated to the person and garment inputs. Category embeddings ("tops", "bottoms", "one-pieces") are added to timestep conditioning.</p>
+
+            <div class="architecture-diagram">
+                <img src="https://static.fashn.ai/repositories/fashn-vton-v15/try-on-diagram.jpg" alt="FASHN VTON v1.5 architecture diagram showing the MMDiT pipeline with person and garment inputs, pose conditioning, and pixel-space output">
+            </div>
+
+            <h3>Training</h3>
+            <p>FASHN VTON v1.5 was trained from scratch in two phases. Phase 1 trained on 18M masked try-on pairs. Phase 2 trained on a 50/50 mix of masked pairs and 4M synthetic triplets generated by the Phase 1 checkpoint. These triplets consist of people wearing alternative garments paired with their originals as ground truth, enabling the model to perform try-on from an unmasked input while preserving body shape.</p>
+
+            <p>Training from scratch in pixel space is computationally demanding. The patch-mixer blocks addressed this by allowing up to 75% of tokens to be dropped during training, significantly reducing memory and compute requirements.</p>
+        </div>
+    </section>
+
+    <!-- Results Section -->
+    <section class="results">
+        <div class="container">
+            <h2>Results</h2>
+            <p>The key advantage of maskless inference is freedom from the constraints imposed by segmentation masks. The examples below compare v1.5 against FASHN VTON v1, the previous state-of-the-art which relied on masked inference. They highlight challenging scenarios: voluminous garments that exceed the original outfit's boundaries, hair regions where the original garment leaks through due to segmentation errors, tattoos and body characteristics that masked methods typically erase, and cultural garments like hijabs that require preservation during swaps.</p>
+        </div>
+        <div class="container--wide">
+            <div class="slider slider--wide" id="results-slider">
+                <button class="slider-arrow prev" data-slider="results" data-dir="prev" aria-label="Previous slide">&#8249;</button>
+                <button class="slider-arrow next" data-slider="results" data-dir="next" aria-label="Next slide">&#8250;</button>
+                <div class="slider-track" id="results-slides">
+                    <div class="slide">
+                        <img src="https://static.fashn.ai/repositories/fashn-vton-v15/results/group87-1x4.webp" alt="Skirt try-on comparison showing body shape preservation">
+                        <p class="slide-caption"><strong>Pants to skirt:</strong> When swapping pants to a skirt, masked inference constrains the output to the original pants boundaries. Segmentation-free mode freely adjusts volume to fit the skirt naturally while preserving body shape.</p>
+                    </div>
+                    <div class="slide">
+                        <img src="https://static.fashn.ai/repositories/fashn-vton-v15/results/group89-1x4.webp" alt="Tattooed model try-on example">
+                        <p class="slide-caption"><strong>Tattoo preservation:</strong> Masked inference erases skin details in the garment region. Segmentation-free mode fully preserves the model's tattoos and keeps the original pants intact since only the top is being swapped.</p>
+                    </div>
+                    <div class="slide">
+                        <img src="https://static.fashn.ai/repositories/fashn-vton-v15/results/group92-1x4.webp" alt="Wedding gown try-on example">
+                        <p class="slide-caption"><strong>Voluminous wedding gown:</strong> Masked inference limits the gown to the original outfit's boundaries, cutting off volume. Segmentation-free mode expands freely to fit the full wedding gown silhouette.</p>
+                    </div>
+                    <div class="slide">
+                        <img src="https://static.fashn.ai/repositories/fashn-vton-v15/results/group91-1x4.webp" alt="Turtleneck sweater dress try-on example">
+                        <p class="slide-caption"><strong>Turtleneck sweater dress:</strong> Masked inference struggles with the loose turtleneck collar and oversized sleeves. Segmentation-free mode transfers these garment details with higher fidelity.</p>
+                    </div>
+                    <div class="slide">
+                        <img src="https://static.fashn.ai/website/posts/longline-top-q1qd1.webp" alt="Longline t-shirt try-on example">
+                        <p class="slide-caption"><strong>Longline t-shirt:</strong> The longline t-shirt extends below typical top length. Masked inference clips to the original top boundaries, while segmentation-free mode extends the garment naturally.</p>
+                    </div>
+                    <div class="slide">
+                        <img src="https://static.fashn.ai/website/posts/kurta-top-52mptq.webp" alt="Kurta top try-on example">
+                        <p class="slide-caption"><strong>Kurta top:</strong> This traditional kurta extends below the knee. Masked inference constrains the garment to standard top length, while segmentation-free mode handles the full volume expansion.</p>
+                    </div>
+                    <div class="slide">
+                        <img src="https://static.fashn.ai/website/posts/the-north-face-6g36mz.webp" alt="Puffer jacket try-on example">
+                        <p class="slide-caption"><strong>Puffer jacket on tight clothing:</strong> The model wears a slim-fitting outfit, but the target is a bulky puffer jacket. Masked inference restricts volume to the original silhouette, while segmentation-free mode expands realistically.</p>
+                    </div>
+                    <div class="slide">
+                        <img src="https://static.fashn.ai/website/posts/mermaid-dress-xufi60.webp" alt="Mermaid dress try-on example">
+                        <p class="slide-caption"><strong>Floor-length mermaid gown:</strong> This mermaid gown flows to the floor and covers the feet. Masked inference cuts off at the original garment boundaries, while segmentation-free mode renders the full length.</p>
+                    </div>
+                    <div class="slide">
+                        <img src="https://static.fashn.ai/website/posts/hair-infront-black-94hooj.webp" alt="Hair occlusion handling example">
+                        <p class="slide-caption"><strong>Hair occlusion (dark garment):</strong> When hair overlaps the garment area, masked inference misclassifies parts of the original dark garment as hair, causing it to leak through. Segmentation-free mode avoids this by not relying on segmentation.</p>
+                    </div>
+                    <div class="slide">
+                        <img src="https://static.fashn.ai/website/posts/hair-infront-white-v997vq.webp" alt="Hair occlusion white garment example">
+                        <p class="slide-caption"><strong>Hair occlusion (light garment):</strong> Similar to dark garments, the original light-colored garment leaks through hair strands due to segmentation errors in masked inference. Segmentation-free mode preserves clean hair appearance.</p>
+                    </div>
+                    <div class="slide">
+                        <img src="https://static.fashn.ai/website/posts/hijab-ptecze.webp" alt="Hijab preservation example">
+                        <p class="slide-caption"><strong>Hijab preservation:</strong> Masked inference often misclassifies the hijab as part of the garment region, causing distortion. Segmentation-free mode correctly preserves the head covering during the swap.</p>
+                    </div>
+                    <div class="slide">
+                        <img src="https://static.fashn.ai/website/posts/open-jacket-vwc8o6.webp" alt="Layered outfit try-on example">
+                        <p class="slide-caption"><strong>Layered outfit:</strong> The model wears a jacket over a top. Masked inference often includes the outer layer, causing unwanted changes. Segmentation-free mode selectively replaces only the inner top while keeping the jacket intact.</p>
+                    </div>
+                </div>
+                <div class="slider-dots" data-slider="results">
+                    <span class="dot active" data-index="0"></span>
+                    <span class="dot" data-index="1"></span>
+                    <span class="dot" data-index="2"></span>
+                    <span class="dot" data-index="3"></span>
+                    <span class="dot" data-index="4"></span>
+                    <span class="dot" data-index="5"></span>
+                    <span class="dot" data-index="6"></span>
+                    <span class="dot" data-index="7"></span>
+                    <span class="dot" data-index="8"></span>
+                    <span class="dot" data-index="9"></span>
+                    <span class="dot" data-index="10"></span>
+                    <span class="dot" data-index="11"></span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Limitations Section -->
+    <section class="limitations">
+        <div class="container">
+            <h2>Limitations</h2>
+            <ul>
+                <li><strong>Resolution:</strong> Output is limited to 576×864 compared to 1K+ resolutions achievable with VAE-based architectures.</li>
+                <li><strong>Body preservation:</strong> Maskless inference significantly improves body preservation compared to masked methods, but is not yet perfect. Since synthetic triplets were generated by a masked model, some body characteristics may still shift slightly.</li>
+                <li><strong>Garment removal:</strong> In maskless mode, the original garment may not be fully removed, especially in long-to-short transitions or bulky-to-slim conversions. The model preserves body shape but may leave traces of the original clothing.</li>
+            </ul>
+        </div>
+        <div class="container--wide">
+            <div class="slider slider--wide" id="limitations-slider">
+                <button class="slider-arrow prev" data-slider="limitations" data-dir="prev" aria-label="Previous slide">&#8249;</button>
+                <button class="slider-arrow next" data-slider="limitations" data-dir="next" aria-label="Next slide">&#8250;</button>
+                <div class="slider-track" id="limitations-slides">
+                    <div class="slide">
+                        <img src="https://static.fashn.ai/website/posts/plus-size-artifact-9uaiwu.webp" alt="Long-to-short transition artifact example">
+                        <p class="slide-caption"><strong>Garment traces at hem:</strong> The model wears a gray t-shirt and the target is a "Top Gun" t-shirt. Masked inference follows the original garment too closely, making the fit too long. Segmentation-free mode fits the garment correctly but leaves traces of the original gray fabric at the hem.</p>
+                    </div>
+                    <div class="slide">
+                        <img src="https://static.fashn.ai/website/posts/rihanna-puffy-nj2ws9.webp" alt="Bulky-to-slim conversion artifact example">
+                        <p class="slide-caption"><strong>Bulky-to-slim conversion:</strong> The model wears a voluminous purple tulle dress and the target is a slim green blazer dress. Masked inference produces a distorted result with altered footwear. Segmentation-free mode fits the blazer correctly and preserves the original shoes, but leaves the original purple tulle visible below the new garment.</p>
+                    </div>
+                </div>
+                <div class="slider-dots" data-slider="limitations">
+                    <span class="dot active" data-index="0"></span>
+                    <span class="dot" data-index="1"></span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- References Section -->
+    <section class="references">
+        <div class="container">
+            <h2>References</h2>
+            <ol class="references-list">
+                <li id="ref-1">Esser et al. <a href="https://arxiv.org/abs/2403.03206" target="_blank">"Scaling Rectified Flow Transformers for High-Resolution Image Synthesis"</a> (ICML 2024)</li>
+                <li id="ref-2">Sehwag et al. <a href="https://arxiv.org/abs/2407.15811" target="_blank">"Stretching Each Dollar: Diffusion Training from Scratch on a Micro-Budget"</a> (2024)</li>
+            </ol>
+        </div>
+    </section>
+
+    <!-- BibTeX -->
+    <section class="bibtex">
+        <div class="container">
+            <h2>Citation</h2>
+            <p class="bibtex-note">If you use FASHN VTON v1.5 in your research, please cite our work:</p>
+            <div class="bibtex-container">
+                <button class="copy-btn" onclick="copyBibtex()">Copy</button>
+                <pre><code>@article{bochman2025fashnvton,
+  title={FASHN VTON v1.5: Efficient Maskless Virtual Try-On in Pixel Space},
+  author={Bochman, Dan and Bochman, Aya},
+  journal={arXiv preprint},
+  year={2025},
+  note={Paper coming soon}
+}</code></pre>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <div class="container">
+            <p>FASHN VTON v1.5 is released under the Apache 2.0 License.</p>
+            <div class="footer-links">
+                <a href="https://github.com/fashn-AI/fashn-vton-1.5">GitHub</a>
+                <a href="https://huggingface.co/fashn-ai/fashn-vton-1.5">HuggingFace</a>
+                <a href="https://fashn.ai">FASHN AI</a>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Hero slideshow (auto-rotating)
+        (function() {
+            const images = [
+                'concat_1', 'concat_2', 'concat_3', 'concat_4', 'concat_5',
+                'concat_6', 'concat_7', 'concat_8', 'concat_11', 'concat_12',
+                'concat_13', 'concat_14', 'concat_15', 'concat_16', 'concat_17',
+                'concat_18', 'concat_20', 'concat_21', 'concat_22'
+            ];
+            const baseUrl = 'https://static.fashn.ai/repositories/fashn-vton-v15/hero/';
+            let currentIndex = 0;
+
+            const track = document.getElementById('slideshow-track');
+            const currentImg = document.getElementById('slideshow-current');
+            const nextImg = document.getElementById('slideshow-next');
+
+            // Preload images
+            images.forEach(name => {
+                const preload = new Image();
+                preload.src = `${baseUrl}${name}.webp`;
+            });
+
+            function nextSlide() {
+                currentIndex = (currentIndex + 1) % images.length;
+                nextImg.src = `${baseUrl}${images[currentIndex]}.webp`;
+
+                setTimeout(() => {
+                    track.classList.add('slide');
+
+                    setTimeout(() => {
+                        // Disable transition FIRST, before any changes
+                        track.style.transition = 'none';
+                        track.classList.remove('slide');
+
+                        // Wait for the snap to paint, THEN update the src
+                        requestAnimationFrame(() => {
+                            currentImg.src = nextImg.src;
+                            requestAnimationFrame(() => {
+                                track.style.transition = '';
+                            });
+                        });
+                    }, 800);
+                }, 50);
+            }
+
+            setInterval(nextSlide, 3500);
+        })();
+
+        // Generic slider component
+        function initSlider(slidesId, sliderName) {
+            const slides = document.getElementById(slidesId);
+            if (!slides) return null;
+
+            const dots = document.querySelectorAll(`.slider-dots[data-slider="${sliderName}"] .dot`);
+            const totalSlides = slides.children.length;
+            let currentIndex = 0;
+
+            function goToSlide(index) {
+                currentIndex = index;
+                slides.style.transform = `translateX(-${index * 100}%)`;
+                dots.forEach((dot, i) => {
+                    dot.classList.toggle('active', i === index);
+                });
+            }
+
+            // Arrow controls
+            document.querySelectorAll(`.slider-arrow[data-slider="${sliderName}"]`).forEach(btn => {
+                btn.addEventListener('click', () => {
+                    if (btn.dataset.dir === 'prev') {
+                        goToSlide((currentIndex - 1 + totalSlides) % totalSlides);
+                    } else {
+                        goToSlide((currentIndex + 1) % totalSlides);
+                    }
+                });
+            });
+
+            // Dot controls
+            dots.forEach(dot => {
+                dot.addEventListener('click', () => {
+                    goToSlide(parseInt(dot.dataset.index));
+                });
+            });
+
+            // Touch/swipe support
+            let touchStartX = 0;
+            slides.addEventListener('touchstart', e => {
+                touchStartX = e.changedTouches[0].screenX;
+            });
+            slides.addEventListener('touchend', e => {
+                const touchEndX = e.changedTouches[0].screenX;
+                if (touchStartX - touchEndX > 50) {
+                    goToSlide((currentIndex + 1) % totalSlides);
+                } else if (touchEndX - touchStartX > 50) {
+                    goToSlide((currentIndex - 1 + totalSlides) % totalSlides);
+                }
+            });
+
+            return { goToSlide };
+        }
+
+        // Initialize all sliders
+        initSlider('results-slides', 'results');
+        initSlider('limitations-slides', 'limitations');
+
+        // BibTeX copy function
+        function copyBibtex() {
+            const bibtex = document.querySelector('.bibtex-container code').textContent;
+            navigator.clipboard.writeText(bibtex).then(() => {
+                const btn = document.querySelector('.copy-btn');
+                btn.textContent = 'Copied!';
+                btn.classList.add('copied');
+                setTimeout(() => {
+                    btn.textContent = 'Copy';
+                    btn.classList.remove('copied');
+                }, 2000);
+            });
+        }
+    </script>
+</body>
+</html>
