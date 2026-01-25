@@ -146,5 +146,5 @@ Apache-2.0. See [LICENSE](LICENSE) for details.
 **Third-party components:**
 - [DWPose](https://github.com/IDEA-Research/DWPose) (Apache-2.0)
 - [YOLOX](https://github.com/Megvii-BaseDetection/YOLOX) (Apache-2.0)
-- [fashn-human-parser](https://github.com/fashn-AI/fashn-human-parser)
+- [fashn-human-parser](https://github.com/fashn-AI/fashn-human-parser) ([License](https://github.com/fashn-AI/fashn-human-parser?tab=readme-ov-file#license))
 
