@@ -72,6 +72,7 @@ venv.bak/
 *.onnx
 *.bin
 weights/
+models/
 
 # Cache directories
 .cache/

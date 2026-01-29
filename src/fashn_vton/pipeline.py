@@ -50,7 +50,7 @@ class TryOnPipeline:
         logger: Optional logger instance
 
     Example:
-        pipeline = TryOnPipeline(weights_dir="./weights")
+        pipeline = TryOnPipeline(weights_dir="./models")
         result = pipeline(person_image, garment_image, category="tops")
     """
 
@@ -136,6 +136,11 @@ class TryOnPipeline:
     def _setup_hp_model(self):
         """Load human parsing model."""
         self.logger.info("Loading FashnHumanParser")
+
+        # 设置 HF_HOME 到 weights_dir/huggingface，确保模型缓存在项目目录
+        hf_cache_dir = os.path.join(self.weights_dir, "huggingface")
+        if os.path.exists(hf_cache_dir):
+            os.environ["HF_HOME"] = hf_cache_dir
 
         hp_device = "cuda" if self.device.type == "cuda" else "cpu"
         self.hp_model = FashnHumanParser(device=hp_device)
