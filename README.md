@@ -1,6 +1,9 @@
 # FASHN VTON v1.5: Efficient Maskless Virtual Try-On in Pixel Space
 
 <div align="center">
+  <a href="https://github.com/kegeai888/fashn-vton-1.5">
+    <img src='https://img.shields.io/badge/GitHub-Repository-181717?style=flat&logo=github' alt='GitHub'>
+  </a>
   <a href="https://fashn.ai/research/vton-1-5">
     <img src='https://img.shields.io/badge/Project-Page-1A1A1A?style=flat' alt='Project Page'>
   </a>
@@ -18,7 +21,7 @@
   </a>
 </div>
 
-by [FASHN AI](https://fashn.ai)
+by [FASHN AI](https://fashn.ai) | WebUI by [科哥](https://github.com/kegeai888)
 
 Virtual try-on model that generates photorealistic images directly in pixel space without requiring segmentation masks.
 
@@ -28,6 +31,31 @@ Virtual try-on model that generates photorealistic images directly in pixel spac
 
 This repo contains minimal inference code to run virtual try-on with the FASHN VTON v1.5 model weights. Given a person image and a garment image, the model generates a photorealistic image of the person wearing the garment. Supports both model photos and flat-lay product shots as garment inputs.
 
+**✨ 新增功能**: 现代简约风格的 Gradio WebUI，支持图像上传、参数调节、实时生成和结果展示。
+
+---
+
+## 🚀 快速启动（WebUI）
+
+```bash
+# 克隆仓库
+git clone https://github.com/kegeai888/fashn-vton-1.5.git
+cd fashn-vton-1.5
+
+# 安装依赖（conda base 环境）
+conda activate base
+pip install -e .
+pip install gradio>=5.0.0
+
+# 下载模型（约 2.2GB）
+bash download_models.sh
+
+# 启动 WebUI
+bash start_app.sh
+```
+
+访问: http://localhost:7860
+
 ---
 
 ## Local Installation
@@ -35,7 +63,7 @@ This repo contains minimal inference code to run virtual try-on with the FASHN V
 We recommend using a virtual environment:
 
 ```bash
-git clone https://github.com/fashn-AI/fashn-vton-1.5.git
+git clone https://github.com/kegeai888/fashn-vton-1.5.git
 cd fashn-vton-1.5
 python -m venv .venv && source .venv/bin/activate
 pip install -e .
